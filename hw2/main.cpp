@@ -30,6 +30,8 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 
 Eigen::Matrix4f get_model_matrix(Eigen::Vector3f euler_angle, Eigen::Vector3f scales, Eigen::Vector3f offset)
 {
+        Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
+        return view;
     Matrix4f result;
     euler_angle = euler_angle * MY_PI / 180.f;
     Matrix4f rotation_x, rotation_y, rotation_z;
@@ -100,8 +102,7 @@ int main(int argc, const char** argv)
 
     rst::rasterizer r(700, 700, 4);
 
-    Eigen::Vector3f eye_pos = {0,0,25};
-
+    Eigen::Vector3f eye_pos = {0,0,4};
 
     std::vector<Eigen::Vector3f> pos
             {
@@ -154,14 +155,14 @@ int main(int argc, const char** argv)
         return 0;
     }
 
-    std::string angle_slider = "x_angle_slider";
-    cv::namedWindow(angle_slider);
-    cv::createTrackbar("x_angle_slider", angle_slider, &x_angle, 360,slider_value_change_callback);
-    cv::createTrackbar("y_angle_slider", angle_slider, &y_angle, 360,slider_value_change_callback);
-    cv::createTrackbar("z_angle_slider", angle_slider, &z_angle, 360,slider_value_change_callback);
-    cv::createTrackbar("x_offset_slider", angle_slider, &x_offset, 10,slider_value_change_callback);
-    cv::createTrackbar("y_offset_slider", angle_slider, &y_offset, 10,slider_value_change_callback);
-    cv::createTrackbar("z_offset_slider", angle_slider, &z_offset, 10,slider_value_change_callback);
+//     std::string angle_slider = "x_angle_slider";
+//     cv::namedWindow(angle_slider);
+//     cv::createTrackbar("x_angle_slider", angle_slider, &x_angle, 360,slider_value_change_callback);
+//     cv::createTrackbar("y_angle_slider", angle_slider, &y_angle, 360,slider_value_change_callback);
+//     cv::createTrackbar("z_angle_slider", angle_slider, &z_angle, 360,slider_value_change_callback);
+//     cv::createTrackbar("x_offset_slider", angle_slider, &x_offset, 10,slider_value_change_callback);
+//     cv::createTrackbar("y_offset_slider", angle_slider, &y_offset, 10,slider_value_change_callback);
+//     cv::createTrackbar("z_offset_slider", angle_slider, &z_offset, 10,slider_value_change_callback);
 
 
     while(key != 27)

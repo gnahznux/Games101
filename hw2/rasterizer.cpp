@@ -166,9 +166,21 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
                 z_interpolated *= w_reciprocal;
                 if (z_interpolated < depth_buf[get_index(i, j)]){
                     depth_buf[get_index(i,j)] = z_interpolated;
-                    set_pixel(Vector3f(i, j, 1), inside_count/4.0f * t.getColor());
+                    auto back_color = get_pixel(Vector3f(i, j, 1));
+                    set_pixel(Vector3f(i, j, 1), inside_count / 4.0f * t.getColor());
+                   
                 }
             }
+        //   if (insideTriangle(i, j, t.v)){
+        //        auto[alpha, beta, gamma] = computeBarycentric2D(i, j, t.v);
+        //         float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+        //         float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+        //         z_interpolated *= w_reciprocal;
+        //         if (z_interpolated < depth_buf[get_index(i, j)]){
+        //             depth_buf[get_index(i,j)] = z_interpolated;
+        //             set_pixel(Vector3f(i, j, 1), t.getColor());
+        //         }
+        //   }
         }
     }
 }
@@ -192,7 +204,7 @@ void rst::rasterizer::clear(rst::Buffers buff)
 {
     if ((buff & rst::Buffers::Color) == rst::Buffers::Color)
     {
-        std::fill(frame_buf.begin(), frame_buf.end(), Eigen::Vector3f{0, 0, 0});
+        std::fill(frame_buf.begin(), frame_buf.end(), background_color);
     }
     if ((buff & rst::Buffers::Depth) == rst::Buffers::Depth)
     {
@@ -215,8 +227,12 @@ void rst::rasterizer::set_pixel(const Eigen::Vector3f& point, const Eigen::Vecto
 {
     //old index: auto ind = point.y() + point.x() * width;
     auto ind = (height-1-point.y())*width + point.x();
-    frame_buf[ind] = color;
+    frame_buf[ind] = frame_buf[ind] + color;
+}
 
+Eigen::Vector3f rst::rasterizer::get_pixel(const Eigen::Vector3f& point){
+   auto ind = (height-1-point.y())*width + point.x();
+    return frame_buf[ind];
 }
 
 // clang-format on
