@@ -6,6 +6,12 @@
 
 constexpr double MY_PI = 3.1415926;
 
+int x_angle, y_angle, z_angle, x_offset, y_offset, z_offset;
+
+Eigen::Vector3f angle(0.0f, 0.0f, 0.0f);
+Eigen::Vector3f scales(1.0f, 1.0f, 1.0f);
+Eigen::Vector3f offset(0.0f, 0.0f, 0.0f);
+
 Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 {
     Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
@@ -21,33 +27,46 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
     return view;
 }
 
-Eigen::Matrix4f get_model_matrix(float rotation_angle)
+Eigen::Matrix4f get_model_matrix(Eigen::Vector3f euler_angle, Eigen::Vector3f scales, Eigen::Vector3f offset)
 {
-    Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
-
-    // TODO: Implement this function
-    // Create the model matrix for rotating the triangle around the Z axis.
-    // Then return it.
-    double cos_angle = cos(rotation_angle/180.0f * MY_PI);
-    double sin_angle = sin(rotation_angle/180.0f * MY_PI);
-    model <<  cos_angle, -sin_angle, 0.0f, 0.0f,
-                 sin_angle,  cos_angle, 0.0f, 0.0f, 
-                 0.0f     ,  0.0f     , 1.0f, 0.0f, 
-                 0.0f     ,  0.0f     , 0.0f, 1.0f;
-
-
-    return model;
+    Matrix4f result;
+    euler_angle = euler_angle * MY_PI / 180.f;
+    Matrix4f rotation_x, rotation_y, rotation_z;
+    rotation_x <<
+               1, 0, 0, 0,
+            0, cos(euler_angle[0]), -sin(euler_angle[0]), 0,
+            0, sin(euler_angle[0]), cos(euler_angle[0]), 0,
+            0, 0, 0, 1;
+    rotation_y <<
+               cos(euler_angle[1]) , 0, sin(euler_angle[1]), 0,
+            0, 1, 0, 0,
+            -sin(euler_angle[1]), 0, cos(euler_angle[1]), 0,
+            0, 0, 0, 1;
+    rotation_z <<
+               cos(euler_angle[2]), -sin(euler_angle[2]), 0, 0,
+            sin(euler_angle[2]), cos(euler_angle[2]), 0, 0  ,
+            0, 0, 1, 0,
+            0, 0, 0, 1;
+    Matrix4f scale;
+    scale <<
+          scales[0], 0, 0, 0,
+            0, scales[1], 0, 0,
+            0, 0, scales[2], 0,
+            0, 0, 0, 1;
+    Matrix4f translate;
+    translate <<
+              1, 0, 0, offset[0],
+            0, 1, 0, offset[1],
+            0, 0, 1, offset[2],
+            0, 0, 0, 1;
+    return translate * (rotation_z * rotation_y * rotation_x) * scale;
 }
 
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                                       float zNear, float zFar)
 {
-    // Students will implement this function
-
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
-    
 
-    
      projection << 
      -1.0f/(aspect_ratio*tan(eye_fov/360.0f * MY_PI)), 0.0f, 0.0f, 0.0f,
      0.0f,   -1.0f/tan(eye_fov/360.0f * MY_PI),     0.0f,     0.0f,
@@ -57,15 +76,26 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     return projection;
 }
 
+void slider_value_change_callback(int pos, void* userdata){
+    angle[0] = x_angle;
+    angle[1] = y_angle;
+    angle[2] = z_angle;
+    offset[0] = x_offset;
+    offset[1] = y_offset;
+    offset[2] = z_offset;
+}
+
+
+
 int main(int argc, const char** argv)
 {
-    float angle = 0;
+
     bool command_line = false;
     std::string filename = "output.png";
 
     if (argc >= 3) {
         command_line = true;
-        angle = std::stof(argv[2]); // -r by default
+//        angle = std::stof(argv[2]); // -r by default
         if (argc == 4) {
             filename = std::string(argv[3]);
         }
@@ -88,7 +118,7 @@ int main(int argc, const char** argv)
     if (command_line) {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-        r.set_model(get_model_matrix(angle));
+        r.set_model(get_model_matrix(angle, scales, offset));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -101,10 +131,19 @@ int main(int argc, const char** argv)
         return 0;
     }
 
+    std::string angle_slider = "x_angle_slider";
+    cv::namedWindow(angle_slider);
+    cv::createTrackbar("x_angle_slider", angle_slider, &x_angle, 360,slider_value_change_callback);
+    cv::createTrackbar("y_angle_slider", angle_slider, &y_angle, 360,slider_value_change_callback);
+    cv::createTrackbar("z_angle_slider", angle_slider, &z_angle, 360,slider_value_change_callback);
+    cv::createTrackbar("x_offset_slider", angle_slider, &x_offset, 10,slider_value_change_callback);
+    cv::createTrackbar("y_offset_slider", angle_slider, &y_offset, 10,slider_value_change_callback);
+    cv::createTrackbar("z_offset_slider", angle_slider, &z_offset, 10,slider_value_change_callback);
+
     while (key != 27) {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-        r.set_model(get_model_matrix(angle));
+        r.set_model(get_model_matrix(angle, scales, offset));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -116,13 +155,26 @@ int main(int argc, const char** argv)
         key = cv::waitKey(10);
 
         std::cout << "frame count: " << frame_count++ << '\n';
-
+        if (key == 'q'){
+            angle[0] += 10;
+        }
+        if (key == 'e'){
+            angle[0] -= 10;
+        }
         if (key == 'a') {
-            angle += 10;
+            angle[1] += 10;
         }
-        else if (key == 'd') {
-            angle -= 10;
+        if (key == 'd') {
+            angle[1] -= 10;
         }
+        if (key == 'z'){
+            angle[2] += 10;
+        }
+        if (key == 'c'){
+            angle[2] -= 10;
+        }
+
+
     }
 
     return 0;

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.1)
+project(Games101)
 find_package(Eigen3 REQUIRED CONFIG)
 find_package(OpenCV REQUIRED)
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS}) 
@@ -5,6 +7,7 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
 
 
 add_subdirectory(pa0)
+add_subdirectory(hw1)
 add_subdirectory(hw2)
 add_subdirectory(hw3)
 add_subdirectory(hw4)
