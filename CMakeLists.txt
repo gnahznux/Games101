@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
+# set(CMAKE_GENERATOR_PLATFORM "x86-windows")
+set(VCPKG_DEFAULT_TRIPLET "x86-windows")
+set(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(Games101)
 find_package(Eigen3 REQUIRED CONFIG)
 find_package(OpenCV REQUIRED)

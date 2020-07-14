@@ -67,13 +67,14 @@ namespace rst
         void set_projection(const Eigen::Matrix4f& p);
 
         void set_pixel(const Eigen::Vector3f& point, const Eigen::Vector3f& color);
-        Eigen::Vector3f get_pixel(const Eigen::Vector3f& point);
+
+        void set_result_buffer_pixel();
 
         void clear(Buffers buff);
 
         void draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf_id col_buffer, Primitive type);
 
-        std::vector<Eigen::Vector3f>& frame_buffer() { return frame_buf; }
+        std::vector<Eigen::Vector3f>& frame_buffer() { return result_frame_buf; }
 
 	void set_msaa(int value);
     private:
@@ -93,8 +94,10 @@ namespace rst
         std::map<int, std::vector<Eigen::Vector3f>> col_buf;
 
         std::vector<Eigen::Vector3f> frame_buf;
-
         std::vector<float> depth_buf;
+
+        std::vector<Eigen::Vector3f> result_frame_buf;
+
         int get_index(int x, int y);
 
         Eigen::Vector3f background_color{0.0f, 0.0f, 0.0f};
